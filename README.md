@@ -1,8 +1,3 @@
-Here is the **clean, simple README in English** for the MVP.
-You can paste this directly into `README.md`.
-
----
-
 # Supplier Plan – MVP
 
 A simple prototype application for **creating teacher substitution plans (Supplier Plans)** in a school.
