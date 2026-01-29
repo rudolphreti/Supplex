@@ -1,37 +1,30 @@
-## Project Overview
+# Supplex – Vertretungsplan Demo
 
-This repository contains a minimal MVP for generating **teacher substitution plans** (“Supplierplan”).  
-Instead of building plans manually, the app lets you:
+Dieses Projekt ist ein minimales Next.js-Frontend (App Router, TypeScript) für eine Vertretungsplan-Demo.
+Die Oberfläche ist bewusst schlicht gehalten und besteht nur aus HTML/CSS.
 
-- record **teacher absences** for a given date,
-- **generate substitution suggestions** based on availability,
-- **confirm** assignments,
-- view a clean **printable substitution plan** and a **history** of who covered what.
+## Voraussetzungen
 
-The goal is to demonstrate the workflow to school management quickly, with a simple UI and a real database.
+- Node.js (empfohlen: aktuelle LTS-Version)
+- npm
 
-### Core Idea (Data Model)
-The system treats the timetable as **database records**:
-- **Teachers**: who can substitute (role + active flag)
-- **Time slots**: weekday + lesson number (1..10)
-- **Assignments**: who is already busy in a slot (teaching / FZ / FÖ / WE / other)
-- **Absences**: who is missing on a date
-- **Cover requests**: “gaps” created from absences + assignments
-- **Cover assignments**: confirmed substitutions
+## Installation
 
-### How Generation Works (MVP Rules)
-For each gap (class + time slot), the generator proposes candidates who:
-- are **active**
-- are **not absent**
-- are **not busy** in the same slot (no assignment)
+```bash
+npm install
+```
 
-Candidates are ranked with a simple score, e.g.:
-- prefer roles like **Springer/TL**,
-- prefer teachers who have worked with the class before,
-- avoid overloading the same person with too many covers.
+## Lokale Entwicklung
 
-### Minimal User Flow
-1. Add absences for a date
-2. Generate substitution suggestions
-3. Confirm the selected substitutions
-4. Print the substitution plan and review history
+```bash
+npm run dev
+```
+
+Anschließend ist die Anwendung unter [http://localhost:3000](http://localhost:3000) erreichbar.
+
+## Produktion (optional)
+
+```bash
+npm run build
+npm run start
+```
