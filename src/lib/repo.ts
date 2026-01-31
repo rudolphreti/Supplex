@@ -23,16 +23,46 @@ const ensureTeacherTable = async () => {
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS "Teacher" (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
+      firstName TEXT NOT NULL,
+      lastName TEXT NOT NULL,
       role TEXT NOT NULL,
       active BOOLEAN NOT NULL DEFAULT 1
     )
   `);
+
+  const columns = (await prisma.$queryRawUnsafe(
+    `PRAGMA table_info('Teacher')`,
+  )) as Array<{ name: string }>;
+  const columnNames = new Set(columns.map((column) => column.name));
+
+  if (!columnNames.has("firstName")) {
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "Teacher" ADD COLUMN firstName TEXT NOT NULL DEFAULT ''`,
+    );
+  }
+
+  if (!columnNames.has("lastName")) {
+    await prisma.$executeRawUnsafe(
+      `ALTER TABLE "Teacher" ADD COLUMN lastName TEXT NOT NULL DEFAULT ''`,
+    );
+  }
+
+  if (columnNames.has("name")) {
+    await prisma.$executeRawUnsafe(`
+      UPDATE "Teacher"
+      SET
+        firstName = CASE WHEN firstName = '' THEN name ELSE firstName END,
+        lastName = CASE WHEN lastName = '' THEN '' ELSE lastName END
+      WHERE firstName = '' OR lastName = ''
+    `);
+  }
 };
 
 export const listTeachers = async (): Promise<Teacher[]> => {
   await ensureTeacherTable();
-  return prisma.teacher.findMany({ orderBy: { name: "asc" } });
+  return prisma.teacher.findMany({
+    orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
+  });
 };
 
 export const getTeacherById = async (id: number): Promise<Teacher | null> => {
@@ -41,14 +71,16 @@ export const getTeacherById = async (id: number): Promise<Teacher | null> => {
 };
 
 export const createTeacher = async (input: {
-  name: string;
+  firstName: string;
+  lastName: string;
   role: string;
   active?: boolean;
 }): Promise<Teacher> => {
   await ensureTeacherTable();
   return prisma.teacher.create({
     data: {
-      name: input.name,
+      firstName: input.firstName,
+      lastName: input.lastName,
       role: input.role,
       active: input.active ?? true,
     },
@@ -57,13 +89,14 @@ export const createTeacher = async (input: {
 
 export const updateTeacher = async (
   id: number,
-  input: { name: string; role: string },
+  input: { firstName: string; lastName: string; role: string },
 ): Promise<Teacher> => {
   await ensureTeacherTable();
   return prisma.teacher.update({
     where: { id },
     data: {
-      name: input.name,
+      firstName: input.firstName,
+      lastName: input.lastName,
       role: input.role,
     },
   });

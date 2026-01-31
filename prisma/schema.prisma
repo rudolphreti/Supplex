@@ -9,7 +9,8 @@ datasource db {
 
 model Teacher {
   id                       Int               @id @default(autoincrement())
-  name                     String
+  firstName                String
+  lastName                 String
   role                     String
   active                   Boolean
   assignments              Assignment[]

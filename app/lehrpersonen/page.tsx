@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { buildRoleOptions } from "./roles";
 import { createTeacher, listTeachers } from "@/src/lib/repo";
 
 type LehrpersonenPageProps = {
@@ -17,8 +18,11 @@ export default async function LehrpersonenPage({
   const activeOnly = searchParams?.active === "on";
   const teachers = await listTeachers();
   const filteredTeachers = teachers.filter((teacher) => {
+    const fullName = `${teacher.firstName} ${teacher.lastName}`.trim();
     const matchesQuery = query
-      ? teacher.name.toLowerCase().includes(query.toLowerCase()) ||
+      ? fullName.toLowerCase().includes(query.toLowerCase()) ||
+        teacher.firstName.toLowerCase().includes(query.toLowerCase()) ||
+        teacher.lastName.toLowerCase().includes(query.toLowerCase()) ||
         teacher.role.toLowerCase().includes(query.toLowerCase())
       : true;
     const matchesActive = activeOnly ? teacher.active : true;
@@ -27,13 +31,14 @@ export default async function LehrpersonenPage({
 
   async function handleCreate(formData: FormData) {
     "use server";
-    const name = String(formData.get("name") || "").trim();
+    const firstName = String(formData.get("firstName") || "").trim();
+    const lastName = String(formData.get("lastName") || "").trim();
     const role = String(formData.get("role") || "").trim();
     const active = formData.get("active") === "on";
-    if (!name || !role) {
+    if (!firstName || !lastName || !role) {
       return;
     }
-    await createTeacher({ name, role, active });
+    await createTeacher({ firstName, lastName, role, active });
     revalidatePath("/lehrpersonen");
     redirect("/lehrpersonen");
   }
@@ -49,12 +54,25 @@ export default async function LehrpersonenPage({
       <h3>Lehrperson hinzufügen</h3>
       <form action={handleCreate} style={{ display: "grid", gap: "0.75rem" }}>
         <label style={{ display: "grid", gap: "0.35rem" }}>
-          Name
-          <input name="name" type="text" required />
+          Vorname
+          <input name="firstName" type="text" required />
+        </label>
+        <label style={{ display: "grid", gap: "0.35rem" }}>
+          Nachname
+          <input name="lastName" type="text" required />
         </label>
         <label style={{ display: "grid", gap: "0.35rem" }}>
           Rolle
-          <input name="role" type="text" required />
+          <select name="role" required defaultValue="">
+            <option value="" disabled>
+              Bitte wählen
+            </option>
+            {buildRoleOptions().map((roleOption) => (
+              <option key={roleOption} value={roleOption}>
+                {roleOption}
+              </option>
+            ))}
+          </select>
         </label>
         <label style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
           <input name="active" type="checkbox" defaultChecked />
@@ -97,7 +115,9 @@ export default async function LehrpersonenPage({
             <tbody>
               {filteredTeachers.map((teacher) => (
                 <tr key={teacher.id}>
-                  <td style={{ padding: "0.5rem" }}>{teacher.name}</td>
+                  <td style={{ padding: "0.5rem" }}>
+                    {teacher.firstName} {teacher.lastName}
+                  </td>
                   <td style={{ padding: "0.5rem" }}>{teacher.role}</td>
                   <td style={{ padding: "0.5rem" }}>
                     {teacher.active ? "Aktiv" : "Inaktiv"}

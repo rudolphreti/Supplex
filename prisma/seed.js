@@ -38,12 +38,12 @@ async function main() {
   await prisma.teacher.deleteMany();
 
   const teacherData = [
-    { name: "Klara Vogel", role: "KV", active: true },
-    { name: "Thomas Lang", role: "TL", active: true },
-    { name: "Svenja Kramer", role: "Springer", active: true },
-    { name: "Nils Becker", role: "KV", active: true },
-    { name: "Elena Fuchs", role: "TL", active: true },
-    { name: "Mara Jost", role: "Springer", active: true }
+    { firstName: "Klara", lastName: "Vogel", role: "KV", active: true },
+    { firstName: "Thomas", lastName: "Lang", role: "TL", active: true },
+    { firstName: "Svenja", lastName: "Kramer", role: "Springer", active: true },
+    { firstName: "Nils", lastName: "Becker", role: "KV", active: true },
+    { firstName: "Elena", lastName: "Fuchs", role: "TL", active: true },
+    { firstName: "Mara", lastName: "Jost", role: "Springer", active: true }
   ];
 
   const classRoomData = [

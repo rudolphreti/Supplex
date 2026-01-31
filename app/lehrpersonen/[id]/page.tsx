@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 
 import ConfirmDeleteButton from "../ConfirmDeleteButton";
+import { buildRoleOptions } from "../roles";
 import {
   deleteTeacher,
   getTeacherById,
@@ -29,12 +30,13 @@ export default async function LehrpersonDetailPage({
 
   async function handleUpdate(formData: FormData) {
     "use server";
-    const name = String(formData.get("name") || "").trim();
+    const firstName = String(formData.get("firstName") || "").trim();
+    const lastName = String(formData.get("lastName") || "").trim();
     const role = String(formData.get("role") || "").trim();
-    if (!name || !role) {
+    if (!firstName || !lastName || !role) {
       return;
     }
-    await updateTeacher(teacherId, { name, role });
+    await updateTeacher(teacherId, { firstName, lastName, role });
     revalidatePath("/lehrpersonen");
     redirect("/lehrpersonen");
   }
@@ -54,12 +56,32 @@ export default async function LehrpersonDetailPage({
 
       <form action={handleUpdate} style={{ display: "grid", gap: "0.75rem" }}>
         <label style={{ display: "grid", gap: "0.35rem" }}>
-          Name
-          <input name="name" type="text" defaultValue={teacher.name} required />
+          Vorname
+          <input
+            name="firstName"
+            type="text"
+            defaultValue={teacher.firstName}
+            required
+          />
+        </label>
+        <label style={{ display: "grid", gap: "0.35rem" }}>
+          Nachname
+          <input
+            name="lastName"
+            type="text"
+            defaultValue={teacher.lastName}
+            required
+          />
         </label>
         <label style={{ display: "grid", gap: "0.35rem" }}>
           Rolle
-          <input name="role" type="text" defaultValue={teacher.role} required />
+          <select name="role" required defaultValue={teacher.role}>
+            {buildRoleOptions(teacher.role).map((roleOption) => (
+              <option key={roleOption} value={roleOption}>
+                {roleOption}
+              </option>
+            ))}
+          </select>
         </label>
         <button type="submit">Speichern</button>
       </form>
