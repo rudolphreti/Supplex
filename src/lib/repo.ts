@@ -1,13 +1,12 @@
 import "server-only";
 
-import {
-  Prisma,
-  type Absence,
-  type Assignment,
-  type ClassRoom,
-  type CoverAssignment,
-  type Teacher,
-  type TimeSlot,
+import type {
+  Absence,
+  Assignment,
+  ClassRoom,
+  CoverAssignment,
+  Teacher,
+  TimeSlot,
 } from "@prisma/client";
 
 import prisma from "./db";
@@ -89,7 +88,7 @@ export const createAssignment = async (input: {
   timeSlotId: number;
   teacherId: number;
   classRoomId?: number | null;
-  kind: Prisma.AssignmentKind;
+  kind: string;
   note?: string | null;
 }): Promise<Assignment> =>
   prisma.assignment.create({
