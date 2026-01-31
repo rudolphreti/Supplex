@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Weekday {
+  MO
+  DI
+  MI
+  DO
+  FR
+}
+
+enum AssignmentKind {
+  TEACHING
+  FZ
+  FO
+  WE
+  OTHER
+}
+
+enum CoverAssignmentStatus {
+  CONFIRMED
+}
+
+model Teacher {
+  id                       Int               @id @default(autoincrement())
+  name                     String
+  role                     String
+  active                   Boolean
+  assignments              Assignment[]
+  absences                 Absence[]
+  coverRequests            CoverRequest[]
+  missingCoverAssignments  CoverAssignment[] @relation("MissingTeacher")
+  assignedCoverAssignments CoverAssignment[] @relation("AssignedTeacher")
+}
+
+model ClassRoom {
+  id               Int               @id @default(autoincrement())
+  name             String
+  assignments      Assignment[]
+  coverRequests    CoverRequest[]
+  coverAssignments CoverAssignment[]
+}
+
+model TimeSlot {
+  id               Int               @id @default(autoincrement())
+  weekday          Weekday
+  lessonNo         Int
+  startTime        String
+  endTime          String
+  assignments      Assignment[]
+  coverRequests    CoverRequest[]
+  coverAssignments CoverAssignment[]
+}
+
+model Assignment {
+  id          Int            @id @default(autoincrement())
+  date        DateTime
+  timeSlot    TimeSlot       @relation(fields: [timeSlotId], references: [id])
+  timeSlotId  Int
+  teacher     Teacher        @relation(fields: [teacherId], references: [id])
+  teacherId   Int
+  classRoom   ClassRoom?     @relation(fields: [classRoomId], references: [id])
+  classRoomId Int?
+  kind        AssignmentKind
+  note        String?
+}
+
+model Absence {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  teacher   Teacher  @relation(fields: [teacherId], references: [id])
+  teacherId Int
+  note      String?
+}
+
+model CoverRequest {
+  id               Int       @id @default(autoincrement())
+  date             DateTime
+  timeSlot         TimeSlot  @relation(fields: [timeSlotId], references: [id])
+  timeSlotId       Int
+  classRoom        ClassRoom @relation(fields: [classRoomId], references: [id])
+  classRoomId      Int
+  missingTeacher   Teacher   @relation(fields: [missingTeacherId], references: [id])
+  missingTeacherId Int
+}
+
+model CoverAssignment {
+  id                Int                   @id @default(autoincrement())
+  date              DateTime
+  timeSlot          TimeSlot              @relation(fields: [timeSlotId], references: [id])
+  timeSlotId        Int
+  classRoom         ClassRoom             @relation(fields: [classRoomId], references: [id])
+  classRoomId       Int
+  missingTeacher    Teacher               @relation("MissingTeacher", fields: [missingTeacherId], references: [id])
+  missingTeacherId  Int
+  assignedTeacher   Teacher               @relation("AssignedTeacher", fields: [assignedTeacherId], references: [id])
+  assignedTeacherId Int
+  status            CoverAssignmentStatus
+  decidedAt         DateTime
+}
