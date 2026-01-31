@@ -23,6 +23,9 @@ const toDateRange = (date: Date) => {
 export const listTeachers = async (): Promise<Teacher[]> =>
   prisma.teacher.findMany({ orderBy: { name: "asc" } });
 
+export const getTeacherById = async (id: number): Promise<Teacher | null> =>
+  prisma.teacher.findUnique({ where: { id } });
+
 export const createTeacher = async (input: {
   name: string;
   role: string;
@@ -35,6 +38,21 @@ export const createTeacher = async (input: {
       active: input.active ?? true,
     },
   });
+
+export const updateTeacher = async (
+  id: number,
+  input: { name: string; role: string },
+): Promise<Teacher> =>
+  prisma.teacher.update({
+    where: { id },
+    data: {
+      name: input.name,
+      role: input.role,
+    },
+  });
+
+export const deleteTeacher = async (id: number): Promise<Teacher> =>
+  prisma.teacher.delete({ where: { id } });
 
 export const toggleTeacherActive = async (id: number): Promise<Teacher> => {
   const teacher = await prisma.teacher.findUnique({ where: { id } });
