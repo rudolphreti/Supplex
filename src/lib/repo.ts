@@ -19,41 +19,63 @@ const toDateRange = (date: Date) => {
   return { start, end };
 };
 
-export const listTeachers = async (): Promise<Teacher[]> =>
-  prisma.teacher.findMany({ orderBy: { name: "asc" } });
+const ensureTeacherTable = async () => {
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "Teacher" (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      role TEXT NOT NULL,
+      active BOOLEAN NOT NULL DEFAULT 1
+    )
+  `);
+};
 
-export const getTeacherById = async (id: number): Promise<Teacher | null> =>
-  prisma.teacher.findUnique({ where: { id } });
+export const listTeachers = async (): Promise<Teacher[]> => {
+  await ensureTeacherTable();
+  return prisma.teacher.findMany({ orderBy: { name: "asc" } });
+};
+
+export const getTeacherById = async (id: number): Promise<Teacher | null> => {
+  await ensureTeacherTable();
+  return prisma.teacher.findUnique({ where: { id } });
+};
 
 export const createTeacher = async (input: {
   name: string;
   role: string;
   active?: boolean;
-}): Promise<Teacher> =>
-  prisma.teacher.create({
+}): Promise<Teacher> => {
+  await ensureTeacherTable();
+  return prisma.teacher.create({
     data: {
       name: input.name,
       role: input.role,
       active: input.active ?? true,
     },
   });
+};
 
 export const updateTeacher = async (
   id: number,
   input: { name: string; role: string },
-): Promise<Teacher> =>
-  prisma.teacher.update({
+): Promise<Teacher> => {
+  await ensureTeacherTable();
+  return prisma.teacher.update({
     where: { id },
     data: {
       name: input.name,
       role: input.role,
     },
   });
+};
 
-export const deleteTeacher = async (id: number): Promise<Teacher> =>
-  prisma.teacher.delete({ where: { id } });
+export const deleteTeacher = async (id: number): Promise<Teacher> => {
+  await ensureTeacherTable();
+  return prisma.teacher.delete({ where: { id } });
+};
 
 export const toggleTeacherActive = async (id: number): Promise<Teacher> => {
+  await ensureTeacherTable();
   const teacher = await prisma.teacher.findUnique({ where: { id } });
   if (!teacher) {
     throw new Error(`Teacher ${id} not found`);
