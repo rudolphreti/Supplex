@@ -7,26 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Weekday {
-  MO
-  DI
-  MI
-  DO
-  FR
-}
-
-enum AssignmentKind {
-  TEACHING
-  FZ
-  FO
-  WE
-  OTHER
-}
-
-enum CoverAssignmentStatus {
-  CONFIRMED
-}
-
 model Teacher {
   id                       Int               @id @default(autoincrement())
   name                     String
@@ -49,7 +29,7 @@ model ClassRoom {
 
 model TimeSlot {
   id               Int               @id @default(autoincrement())
-  weekday          Weekday
+  weekday          String
   lessonNo         Int
   startTime        String
   endTime          String
@@ -67,7 +47,7 @@ model Assignment {
   teacherId   Int
   classRoom   ClassRoom?     @relation(fields: [classRoomId], references: [id])
   classRoomId Int?
-  kind        AssignmentKind
+  kind        String
   note        String?
 }
 
@@ -101,6 +81,6 @@ model CoverAssignment {
   missingTeacherId  Int
   assignedTeacher   Teacher               @relation("AssignedTeacher", fields: [assignedTeacherId], references: [id])
   assignedTeacherId Int
-  status            CoverAssignmentStatus
+  status            String
   decidedAt         DateTime
 }
